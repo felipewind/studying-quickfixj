@@ -1,4 +1,4 @@
-# Banzai
+# Executor
 
 ## Credits
 
@@ -16,5 +16,5 @@ mvn clean compile assembly:single
 ## To run the project
 
 ```
-java -jar java -jar banzai-1.0-SNAPSHOT-jar-with-dependencies.jar
+java -jar java -jar executor-1.0-SNAPSHOT-jar-with-dependencies.jar
 ```

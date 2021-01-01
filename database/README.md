@@ -81,8 +81,8 @@ CREATE TABLE sessions (
   targetlocid VARCHAR2(64) NOT NULL,
   session_qualifier VARCHAR2(64) NOT NULL,
   creation_time TIMESTAMP NOT NULL,
-  incoming_seqnum NUMBER(10) NOT NULL,
-  outgoing_seqnum NUMBER(10) NOT NULL,
+  incoming_seqnum INTEGER NOT NULL,
+  outgoing_seqnum INTEGER NOT NULL,
   PRIMARY KEY (beginstring, sendercompid, sendersubid, senderlocid,
                targetcompid, targetsubid, targetlocid, session_qualifier)
 );
@@ -101,7 +101,7 @@ CREATE TABLE messages (
   targetsubid VARCHAR2(64) NOT NULL,
   targetlocid VARCHAR2(64) NOT NULL,
   session_qualifier VARCHAR2(64) NOT NULL,
-  msgseqnum NUMBER(10) NOT NULL,
+  msgseqnum INTEGER NOT NULL,
   message VARCHAR2(4000) NOT NULL,
   PRIMARY KEY (beginstring, sendercompid, sendersubid, senderlocid,
                targetcompid, targetsubid, targetlocid, session_qualifier, msgseqnum)
@@ -113,7 +113,7 @@ CREATE TABLE messages (
 ```sql
 
 CREATE TABLE messages_log (
-id NUMBER GENERATED ALWAYS AS IDENTITY INCREMENT BY 1 START WITH 1 CACHE 1000,
+id INTEGER GENERATED ALWAYS AS IDENTITY INCREMENT BY 1 START WITH 1 CACHE 1000,
 time TIMESTAMP NOT NULL,
 beginstring VARCHAR2(8) NOT NULL,
 sendercompid VARCHAR2(64) NOT NULL,
@@ -132,7 +132,7 @@ PRIMARY KEY (id));
 ```sql
 
 CREATE TABLE event_log (
-id NUMBER GENERATED ALWAYS AS IDENTITY INCREMENT BY 1 START WITH 1 CACHE 1000,
+id INTEGER GENERATED ALWAYS AS IDENTITY INCREMENT BY 1 START WITH 1 CACHE 1000,
 time TIMESTAMP NOT NULL,
 beginstring VARCHAR2(8) NOT NULL,
 sendercompid VARCHAR2(64) NOT NULL,

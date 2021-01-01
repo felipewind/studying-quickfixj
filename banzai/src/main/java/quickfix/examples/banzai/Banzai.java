@@ -21,8 +21,11 @@ package quickfix.examples.banzai;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.concurrent.CountDownLatch;
 
+import javax.sql.DataSource;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 
@@ -30,6 +33,7 @@ import org.quickfixj.jmx.JmxExporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import oracle.jdbc.pool.OracleDataSource;
 import quickfix.DefaultMessageFactory;
 import quickfix.Initiator;
 import quickfix.JdbcLogFactory;
@@ -75,26 +79,56 @@ public class Banzai {
         ExecutionTableModel executionTableModel = new ExecutionTableModel();
         BanzaiApplication application = new BanzaiApplication(orderTableModel, executionTableModel);
         // MessageStoreFactory messageStoreFactory = new FileStoreFactory(settings);
-        // LogFactory logFactory = new ScreenLogFactory(true, true, true, logHeartbeats);
-
-
+        // LogFactory logFactory = new ScreenLogFactory(true, true, true,
+        // logHeartbeats);
+        
         JdbcStoreFactory jdbcStoreFactory = new JdbcStoreFactory(settings);
+        System.out.println("After JdbcStoreFactory");
 
-        //jdbcStoreFactory.setDataSource(dataSource);
+        DataSource ds = getOracleDataSource();
 
-        MessageStoreFactory messageStoreFactory = jdbcStoreFactory;        
-        LogFactory logFactory = new JdbcLogFactory(settings);
+        jdbcStoreFactory.setDataSource(ds);
+        System.out.println("After setDataSource");
+
+        MessageStoreFactory messageStoreFactory = jdbcStoreFactory;
+
+        JdbcLogFactory jdbcLogFactory = new JdbcLogFactory(settings);
+
+        jdbcLogFactory.setDataSource(ds);
+
+        LogFactory logFactory = jdbcLogFactory;
 
         MessageFactory messageFactory = new DefaultMessageFactory();
 
-        initiator = new SocketInitiator(application, messageStoreFactory, settings, logFactory,
-                messageFactory);
+        initiator = new SocketInitiator(application, messageStoreFactory, settings, logFactory, messageFactory);
 
         JmxExporter exporter = new JmxExporter();
         exporter.register(initiator);
 
         frame = new BanzaiFrame(orderTableModel, executionTableModel, application);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
+
+    private DataSource getOracleDataSource() throws SQLException {
+        String jdbcUrl = "jdbc:oracle:thin:@localhost:1521/ORCLCDB.localdomain";
+        String userid = "QUICKFIX";
+        String password = "QUICKFIX";
+
+        Connection conn;
+
+        OracleDataSource ds;
+
+        ds = new OracleDataSource();
+
+        ds.setURL(jdbcUrl);
+
+        conn = ds.getConnection(userid, password); 
+        
+        System.out.println("DataSourceName: " + ds.getDataSourceName());
+        System.out.println("DriverType: " + ds.getDriverType());
+
+        return ds;
+
     }
 
     public synchronized void logon() {

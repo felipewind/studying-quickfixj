@@ -6,6 +6,11 @@ Oracle `VARCHAR2` only goes up to 4000 bytes. More than this, it's necessary to 
 This version uses `VARCHAR2(4000)`, so if it's necessary just change to a `CLOB`.
 
 
+Dica para obter o DataSorce para o Oracle
+
+https://docs.oracle.com/database/121/TDPJD/getconn.htm#TDPJD144
+
+
 ## Local Oracle Database for tests
 
 ### Oracle 12c R2

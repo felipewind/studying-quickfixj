@@ -31,12 +31,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import quickfix.DefaultMessageFactory;
-import quickfix.FileStoreFactory;
 import quickfix.Initiator;
+import quickfix.JdbcLogFactory;
+import quickfix.JdbcStoreFactory;
 import quickfix.LogFactory;
 import quickfix.MessageFactory;
 import quickfix.MessageStoreFactory;
-import quickfix.ScreenLogFactory;
 import quickfix.Session;
 import quickfix.SessionID;
 import quickfix.SessionSettings;
@@ -74,8 +74,17 @@ public class Banzai {
         OrderTableModel orderTableModel = new OrderTableModel();
         ExecutionTableModel executionTableModel = new ExecutionTableModel();
         BanzaiApplication application = new BanzaiApplication(orderTableModel, executionTableModel);
-        MessageStoreFactory messageStoreFactory = new FileStoreFactory(settings);
-        LogFactory logFactory = new ScreenLogFactory(true, true, true, logHeartbeats);
+        // MessageStoreFactory messageStoreFactory = new FileStoreFactory(settings);
+        // LogFactory logFactory = new ScreenLogFactory(true, true, true, logHeartbeats);
+
+
+        JdbcStoreFactory jdbcStoreFactory = new JdbcStoreFactory(settings);
+
+        //jdbcStoreFactory.setDataSource(dataSource);
+
+        MessageStoreFactory messageStoreFactory = jdbcStoreFactory;        
+        LogFactory logFactory = new JdbcLogFactory(settings);
+
         MessageFactory messageFactory = new DefaultMessageFactory();
 
         initiator = new SocketInitiator(application, messageStoreFactory, settings, logFactory,

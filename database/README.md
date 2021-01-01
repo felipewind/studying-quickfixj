@@ -51,12 +51,12 @@ Allow commands to create user in sysdba session:
 alter session set "_ORACLE_SCRIPT"=true;
 ```
 
-Create user:
+Create QUICKFIX user:
 ```sql
 create user QUICKFIX identified by QUICKFIX;
 ```
 
-Grant all privileges to user:
+Grant all privileges to the user:
 ```
 GRANT ALL PRIVILEGES TO QUICKFIX;
 ```

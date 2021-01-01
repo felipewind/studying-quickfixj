@@ -21,7 +21,6 @@ package quickfix.examples.banzai;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.CountDownLatch;
 
@@ -34,13 +33,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import oracle.jdbc.pool.OracleDataSource;
+import quickfix.ConfigError;
 import quickfix.DefaultMessageFactory;
+import quickfix.FileStoreFactory;
 import quickfix.Initiator;
 import quickfix.JdbcLogFactory;
 import quickfix.JdbcStoreFactory;
 import quickfix.LogFactory;
 import quickfix.MessageFactory;
 import quickfix.MessageStoreFactory;
+import quickfix.ScreenLogFactory;
 import quickfix.Session;
 import quickfix.SessionID;
 import quickfix.SessionSettings;
@@ -78,25 +80,35 @@ public class Banzai {
         OrderTableModel orderTableModel = new OrderTableModel();
         ExecutionTableModel executionTableModel = new ExecutionTableModel();
         BanzaiApplication application = new BanzaiApplication(orderTableModel, executionTableModel);
-        // MessageStoreFactory messageStoreFactory = new FileStoreFactory(settings);
-        // LogFactory logFactory = new ScreenLogFactory(true, true, true,
-        // logHeartbeats);
-        
-        JdbcStoreFactory jdbcStoreFactory = new JdbcStoreFactory(settings);
-        System.out.println("After JdbcStoreFactory");
 
-        DataSource ds = getOracleDataSource();
+        MessageStoreFactory messageStoreFactory;
+        LogFactory logFactory;
 
-        jdbcStoreFactory.setDataSource(ds);
-        System.out.println("After setDataSource");
+        switch (settings.getString("ApplicationTypeStorageLog").toUpperCase()) {
+            case "DATABASE": {
+                JdbcStoreFactory jdbcStoreFactory = new JdbcStoreFactory(settings);
 
-        MessageStoreFactory messageStoreFactory = jdbcStoreFactory;
+                DataSource ds = getOracleDataSource(settings);
 
-        JdbcLogFactory jdbcLogFactory = new JdbcLogFactory(settings);
+                jdbcStoreFactory.setDataSource(ds);
 
-        jdbcLogFactory.setDataSource(ds);
+                messageStoreFactory = jdbcStoreFactory;
 
-        LogFactory logFactory = jdbcLogFactory;
+                JdbcLogFactory jdbcLogFactory = new JdbcLogFactory(settings);
+
+                jdbcLogFactory.setDataSource(ds);
+
+                logFactory = jdbcLogFactory;
+
+                break;
+            }
+            default: {
+                messageStoreFactory = new FileStoreFactory(settings);
+                logFactory = new ScreenLogFactory(true, true, true, logHeartbeats);
+                break;
+            }
+
+        }
 
         MessageFactory messageFactory = new DefaultMessageFactory();
 
@@ -109,26 +121,17 @@ public class Banzai {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
-    private DataSource getOracleDataSource() throws SQLException {
-        String jdbcUrl = "jdbc:oracle:thin:@localhost:1521/ORCLCDB.localdomain";
-        String userid = "QUICKFIX";
-        String password = "QUICKFIX";
+    private DataSource getOracleDataSource(SessionSettings settings) throws SQLException, ConfigError {
 
-        Connection conn;
+        OracleDataSource ds = new OracleDataSource();
 
-        OracleDataSource ds;
+        ds.setURL(settings.getString("JdbcURL"));
 
-        ds = new OracleDataSource();
+        ds.setUser(settings.getString("JdbcUser"));
 
-        ds.setURL(jdbcUrl);
-
-        conn = ds.getConnection(userid, password); 
-        
-        System.out.println("DataSourceName: " + ds.getDataSourceName());
-        System.out.println("DriverType: " + ds.getDriverType());
+        ds.setPassword(settings.getString("JdbcPassword"));
 
         return ds;
-
     }
 
     public synchronized void logon() {
